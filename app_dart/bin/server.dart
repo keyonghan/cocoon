@@ -28,6 +28,7 @@ Future<void> main() async {
       '/api/create-agent': CreateAgent(config, authProvider),
       '/api/get-authentication-status': GetAuthenticationStatus(config, authProvider),
       '/api/get-log': GetLog(config, authProvider),
+      '/api/get-task-status': GetTaskStatus(config, authProvider),
       '/api/github-webhook-pullrequest': GithubWebhook(config, buildBucketClient),
       '/api/luci-status-handler': LuciStatusHandler(config),
       '/api/push-build-status-to-github': PushBuildStatusToGithub(config, authProvider),
