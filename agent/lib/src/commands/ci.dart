@@ -125,6 +125,19 @@ class ContinuousIntegrationCommand extends Command {
             String errorMessage = 'ERROR: $error\n$stackTrace';
             logger.error(errorMessage);
             await agent.reportFailure(task.key, errorMessage);
+          } finally {
+            bool flag = await agent.getTaskStatus(task.key);
+            if (Platform.isLinux && flag) {
+              await eval(
+                  'gsutil.py',
+                  [
+                    'cp',
+                    '/tmp/${task.key}.log',
+                    'gs://flutter-dashboard-task-log'
+                  ],
+                  canFail: true);
+              await eval('rm', ['/tmp/${task.key}.log'], canFail: true);
+            }
           }
         } catch (error, stackTrace) {
           // Unable to report failure to the backend.

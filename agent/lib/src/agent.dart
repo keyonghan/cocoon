@@ -4,6 +4,7 @@
 
 import 'dart:async';
 import 'dart:convert' show json;
+import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:http/http.dart';
@@ -97,6 +98,9 @@ class Agent {
       throw 'Failed uploading log chunk. Server responded with HTTP status ${resp.statusCode}\n'
           '${resp.body}';
     }
+    if (Platform.isLinux) {
+      (await eval('echo', [chunk, '>>', '${taskKey}.log'], canFail: true)).trim();
+    }
   }
 
   /// Reserves a task in Cocoon backend to be performed by this agent.
@@ -117,6 +121,18 @@ class Agent {
     }
 
     return null;
+  }
+
+  /// Get task status in Cocoon backend performed by this agent
+  /// 
+  /// Return true if finished with 'Succeeded' or 'Failed' twice, 
+  /// otherwise return false.
+  Future<bool> getTaskStatus(String taskKey) async {
+    Map<String, bool> reservation =
+        await _cocoon('get-task-status', {
+      'TaskKey': taskKey,
+    }) as Map<String,  bool>;
+    return reservation["Status"];
   }
 
   Future<void> reportSuccess(String taskKey, Map<String, dynamic> resultData,
