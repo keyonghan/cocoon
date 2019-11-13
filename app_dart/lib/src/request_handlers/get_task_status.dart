@@ -35,7 +35,8 @@ class GetTaskStatus extends ApiRequestHandler<GetTaskStatusResponse> {
   Future<GetTaskStatusResponse> post() async {
     final String taskKeyValue = requestData[taskKeyParam];
     if (taskKeyValue == null) {
-      throw const BadRequestException('Missing required query parameter: $taskKeyParam');
+      throw const BadRequestException(
+          'Missing required query parameter: $taskKeyParam');
     }
 
     final DatastoreService datastore = datastoreProvider();
@@ -55,24 +56,30 @@ class GetTaskStatus extends ApiRequestHandler<GetTaskStatusResponse> {
     });
     final int maxRetries = await config.maxTaskRetries;
     final bool status = task.status == 'Succeeded' ||
-        (task.status == 'Failed' && task.attempts == maxRetries);
+        (task.status == 'Failed' && task.attempts >= maxRetries);
 
-    return GetTaskStatusResponse(status);
+    return GetTaskStatusResponse(status, task, maxRetries);
   }
 }
 
-
 @immutable
 class GetTaskStatusResponse extends JsonBody {
-  const GetTaskStatusResponse(this.status)
-      : assert(status != null);
+  const GetTaskStatusResponse(this.status, this.task, this.maxRetries)
+      : assert(status != null),
+        assert(task != null),
+        assert(maxRetries!=null);
 
   final bool status;
+  final Task task;
+  final int maxRetries;
 
   @override
-  Map<String, bool> toJson() {
-    return <String, bool>{
-      'Status': status,
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'Status': status.toString(),
+      'Attempts': task.attempts,
+      'Task': task.toString(),
+      'MaxRetries': maxRetries,
     };
   }
 }
