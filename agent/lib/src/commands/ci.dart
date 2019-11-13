@@ -126,17 +126,27 @@ class ContinuousIntegrationCommand extends Command {
             logger.error(errorMessage);
             await agent.reportFailure(task.key, errorMessage);
           } finally {
-            bool flag = await agent.getTaskStatus(task.key);
-            if (Platform.isLinux && flag) {
+            Map<String, dynamic> taskStatus = await agent.getTaskStatus(task.key);
+            String status = taskStatus['Status'] as String;
+            int attempts = taskStatus['Attempts'] as int;
+            int maxRetries = taskStatus['MaxRetries'] as int;
+
+            if (Platform.isLinux && status=='true') {
+              String logFile;
+              if (attempts > maxRetries) {
+                logFile = '/tmp/${task.key}_${attempts}.log';
+              } else {
+                logFile = '/tmp/${task.key}.log';
+              }
               await eval(
                   'gsutil.py',
                   [
                     'cp',
-                    '/tmp/${task.key}.log',
+                    logFile,
                     'gs://flutter-dashboard-task-log'
                   ],
                   canFail: true);
-              await eval('rm', ['/tmp/${task.key}.log'], canFail: true);
+              await eval('rm', [logFile], canFail: true);
             }
           }
         } catch (error, stackTrace) {
