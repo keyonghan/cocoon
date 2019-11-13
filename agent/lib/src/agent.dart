@@ -99,7 +99,29 @@ class Agent {
           '${resp.body}';
     }
     /// Save log locally and then upload to GCS
+<<<<<<< HEAD
     gcsLogger.info(chunk);
+=======
+    Map<String, dynamic> taskStatus = await getTaskStatus(taskKey);
+    int attempts = (taskStatus['Attempts'] as int);
+    int maxRetries = taskStatus['MaxRetries'] as int;
+    String taskString = taskStatus['Task'] as String;
+    String logFile;
+   
+    if (Platform.isLinux) {
+      if (attempts > maxRetries) {
+        logFile = '/tmp/${taskKey}_${attempts}.log';
+      } else {
+        logFile = '/tmp/${taskKey}.log';
+      }
+      if (attempts == 1 || attempts > maxRetries){
+        (await eval('echo', ['\n\n------------ TASK ------------', '>>', logFile], canFail: true)).trim();
+        (await eval('echo', [taskString, '>>', logFile], canFail: true)).trim();
+        (await eval('echo', ['\n\n------------ LOG ------------', '>>', logFile], canFail: true)).trim();
+      }
+      (await eval('echo', [chunk, '>>', logFile], canFail: true)).trim();
+    }
+>>>>>>> update agent side
   }
 
   /// Reserves a task in Cocoon backend to be performed by this agent.

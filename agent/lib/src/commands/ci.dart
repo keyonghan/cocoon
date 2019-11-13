@@ -135,6 +135,7 @@ class ContinuousIntegrationCommand extends Command {
             logger.error(errorMessage);
             await agent.reportFailure(task.key, errorMessage, gcsLogger);
           } finally {
+<<<<<<< HEAD
             // Save task info to [logFile] at the end of a task execution
             await saveTaskInfo(task.key, gcsLogger, agent);
             await eval(
@@ -147,6 +148,30 @@ class ContinuousIntegrationCommand extends Command {
                 canFail: true);
             await sink.close();
             rm(file);
+=======
+            Map<String, dynamic> taskStatus = await agent.getTaskStatus(task.key);
+            String status = taskStatus['Status'] as String;
+            int attempts = taskStatus['Attempts'] as int;
+            int maxRetries = taskStatus['MaxRetries'] as int;
+
+            if (Platform.isLinux && status=='true') {
+              String logFile;
+              if (attempts > maxRetries) {
+                logFile = '/tmp/${task.key}_${attempts}.log';
+              } else {
+                logFile = '/tmp/${task.key}.log';
+              }
+              await eval(
+                  'gsutil.py',
+                  [
+                    'cp',
+                    logFile,
+                    'gs://flutter-dashboard-task-log'
+                  ],
+                  canFail: true);
+              await eval('rm', [logFile], canFail: true);
+            }
+>>>>>>> update agent side
           }
         } catch (error, stackTrace) {
           // Unable to report failure to the backend.
