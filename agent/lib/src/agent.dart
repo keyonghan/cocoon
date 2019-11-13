@@ -98,8 +98,25 @@ class Agent {
       throw 'Failed uploading log chunk. Server responded with HTTP status ${resp.statusCode}\n'
           '${resp.body}';
     }
+    /// Save log locally and then upload to GCS
+    Map<String, dynamic> taskStatus = await getTaskStatus(taskKey);
+    int attempts = (taskStatus['Attempts'] as int);
+    int maxRetries = taskStatus['MaxRetries'] as int;
+    String taskString = taskStatus['Task'] as String;
+    String logFile;
+   
     if (Platform.isLinux) {
-      (await eval('echo', [chunk, '>>', '${taskKey}.log'], canFail: true)).trim();
+      if (attempts > maxRetries) {
+        logFile = '/tmp/${taskKey}_${attempts}.log';
+      } else {
+        logFile = '/tmp/${taskKey}.log';
+      }
+      if (attempts == 1 || attempts > maxRetries){
+        (await eval('echo', ['\n\n------------ TASK ------------', '>>', logFile], canFail: true)).trim();
+        (await eval('echo', [taskString, '>>', logFile], canFail: true)).trim();
+        (await eval('echo', ['\n\n------------ LOG ------------', '>>', logFile], canFail: true)).trim();
+      }
+      (await eval('echo', [chunk, '>>', logFile], canFail: true)).trim();
     }
   }
 
@@ -127,12 +144,12 @@ class Agent {
   /// 
   /// Return true if finished with 'Succeeded' or 'Failed' twice, 
   /// otherwise return false.
-  Future<bool> getTaskStatus(String taskKey) async {
-    Map<String, bool> reservation =
+  Future<Map<String, dynamic>> getTaskStatus(String taskKey) async {
+    Map<String, dynamic> taskStatus =
         await _cocoon('get-task-status', {
       'TaskKey': taskKey,
-    }) as Map<String,  bool>;
-    return reservation["Status"];
+    }) as Map<String,  dynamic>;
+    return taskStatus;
   }
 
   Future<void> reportSuccess(String taskKey, Map<String, dynamic> resultData,
