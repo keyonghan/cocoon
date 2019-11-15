@@ -100,6 +100,7 @@ class Agent {
     }
     /// Save log locally and then upload to GCS
 <<<<<<< HEAD
+<<<<<<< HEAD
     gcsLogger.info(chunk);
 =======
     Map<String, dynamic> taskStatus = await getTaskStatus(taskKey);
@@ -122,6 +123,9 @@ class Agent {
       (await eval('echo', [chunk, '>>', logFile], canFail: true)).trim();
     }
 >>>>>>> update agent side
+=======
+    gcsLogger.info(chunk);
+>>>>>>> add sub functions & logger
   }
 
   /// Reserves a task in Cocoon backend to be performed by this agent.

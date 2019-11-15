@@ -136,6 +136,9 @@ class ContinuousIntegrationCommand extends Command {
             await agent.reportFailure(task.key, errorMessage, gcsLogger);
           } finally {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> add sub functions & logger
             // Save task info to [logFile] at the end of a task execution
             await saveTaskInfo(task.key, gcsLogger, agent);
             await eval(
@@ -148,6 +151,7 @@ class ContinuousIntegrationCommand extends Command {
                 canFail: true);
             await sink.close();
             rm(file);
+<<<<<<< HEAD
 =======
             Map<String, dynamic> taskStatus = await agent.getTaskStatus(task.key);
             String status = taskStatus['Status'] as String;
@@ -172,6 +176,8 @@ class ContinuousIntegrationCommand extends Command {
               await eval('rm', [logFile], canFail: true);
             }
 >>>>>>> update agent side
+=======
+>>>>>>> add sub functions & logger
           }
         } catch (error, stackTrace) {
           // Unable to report failure to the backend.
