@@ -13,6 +13,7 @@ import 'package:path/path.dart' as path;
 import 'package:yaml/yaml.dart';
 
 import 'adb.dart';
+import 'agent.dart';
 import 'list_processes.dart';
 
 /// Virtual current working directory, which affect functions, such as [exec].
@@ -629,4 +630,22 @@ Future<void> killAllRunningProcessesOnWindows(String processName) async {
     // Killed processes don't release resources instantenously.
     await Future<void>.delayed(Duration(seconds: 1));
   }
+}
+
+Future<String> getLogFile(String taskKey, Agent agent) async {
+  Map<String, dynamic> taskStatus = await agent.getTaskStatus(taskKey);
+  int attempts = taskStatus['Attempts'] as int;
+
+  if (Platform.isLinux || Platform.isMacOS) {
+    return '/tmp/${taskKey}_${attempts}.log';
+  } else {
+    return '/Users/flutter/AppData/Local/Temp/${taskKey}_${attempts}.log';
+  }
+}
+
+Future<Null> saveTaskInfo(String taskKey, Logger gcsLogger, Agent agent) async {
+  Map<String, dynamic> taskStatus = await agent.getTaskStatus(taskKey);
+  String taskString = taskStatus['Task'] as String;
+    
+  gcsLogger.info('\n------------ TASK ------------\n${taskString}\n\n------------ LOG ------------');
 }

@@ -90,6 +90,13 @@ class ContinuousIntegrationCommand extends Command {
           section('Requesting a task');
           CocoonTask task = await agent.reserveTask();
 
+          // [logFile] saves log locally and then will be
+          // uploaded to GCS
+          String logFile = await getLogFile(task.key, agent);
+          File file = new File(logFile);
+          IOSink sink = file.openWrite();
+          Logger gcsLogger = PrintLogger(out: sink, level: LogLevel.info);
+
           // Errors that happen inside this try/catch will be uploaded to the
           // server because we have succeeded at reserving a task.
           try {
@@ -113,41 +120,33 @@ class ContinuousIntegrationCommand extends Command {
               // Sync flutter outside of the task so it does not contribute to
               // the task timeout.
               await getFlutterAt(task.revision).timeout(_kInstallationTimeout);
-              await _cleanBuildDirectories(agent, task);
+              await _cleanBuildDirectories(agent, task, gcsLogger);
               // Ensure the phone's screen is on before running a task.
               await _screensOn();
+              // Save task info to [logFile] in the beginning of a task execution
+              await saveTaskInfo(task.key, gcsLogger, agent);
 
-              await _runTask(task);
+              await _runTask(task, gcsLogger);
             } else {
               logger.info('No tasks available for this agent.');
             }
           } catch (error, stackTrace) {
             String errorMessage = 'ERROR: $error\n$stackTrace';
             logger.error(errorMessage);
-            await agent.reportFailure(task.key, errorMessage);
+            await agent.reportFailure(task.key, errorMessage, gcsLogger);
           } finally {
-            Map<String, dynamic> taskStatus = await agent.getTaskStatus(task.key);
-            String status = taskStatus['Status'] as String;
-            int attempts = taskStatus['Attempts'] as int;
-            int maxRetries = taskStatus['MaxRetries'] as int;
-
-            if (Platform.isLinux && status=='true') {
-              String logFile;
-              if (attempts > maxRetries) {
-                logFile = '/tmp/${task.key}_${attempts}.log';
-              } else {
-                logFile = '/tmp/${task.key}.log';
-              }
-              await eval(
-                  'gsutil.py',
-                  [
-                    'cp',
-                    logFile,
-                    'gs://flutter-dashboard-task-log'
-                  ],
-                  canFail: true);
-              await eval('rm', [logFile], canFail: true);
-            }
+            // Save task info to [logFile] at the end of a task execution
+            await saveTaskInfo(task.key, gcsLogger, agent);
+            await eval(
+                'gsutil.py',
+                [
+                  'cp',
+                  logFile,
+                  'gs://flutter-dashboard-task-log'
+                ],
+                canFail: true);
+            await sink.close();
+            rm(file);
           }
         } catch (error, stackTrace) {
           // Unable to report failure to the backend.
@@ -172,7 +171,7 @@ class ContinuousIntegrationCommand extends Command {
   /// directories, if any.
   ///
   /// This is to prevent cross-contamination of build artifacts across tests.
-  Future<Null> _cleanBuildDirectories(Agent agent, CocoonTask task) async {
+  Future<Null> _cleanBuildDirectories(Agent agent, CocoonTask task, Logger gcsLogger) async {
     Future<Null> recursivelyDeleteBuildDirectories(Directory directory) async {
       final List<FileSystemEntity> contents = directory.listSync();
       final bool isDartPackage = contents.any((FileSystemEntity entity) =>
@@ -180,7 +179,7 @@ class ContinuousIntegrationCommand extends Command {
       if (isDartPackage) {
         for (FileSystemEntity entity in contents) {
           if (entity is Directory && path.basename(entity.path) == 'build') {
-            await agent.uploadLogChunk(task.key, 'Deleting ${entity.path}\n');
+            await agent.uploadLogChunk(task.key, 'Deleting ${entity.path}\n', gcsLogger);
             rrm(entity);
           }
         }
@@ -194,24 +193,25 @@ class ContinuousIntegrationCommand extends Command {
     }
 
     await agent.uploadLogChunk(
-        task.key, 'Deleting build/ directories, if any.\n');
+        task.key, 'Deleting build/ directories, if any.\n', gcsLogger);
     try {
       await recursivelyDeleteBuildDirectories(config.flutterDirectory);
     } catch (error, stack) {
       await agent.uploadLogChunk(
         task.key,
         'Failed to delete build/ directories: $error\n\n$stack',
+        gcsLogger,
       );
     }
   }
 
-  Future<Null> _runTask(CocoonTask task) async {
-    TaskResult result = await runTask(agent, task);
+  Future<Null> _runTask(CocoonTask task, Logger gcsLogger) async {
+    TaskResult result = await runTask(agent, task, gcsLogger);
     if (result.succeeded) {
       await agent.reportSuccess(
           task.key, result.data, result.benchmarkScoreKeys);
     } else {
-      await agent.reportFailure(task.key, result.reason);
+      await agent.reportFailure(task.key, result.reason, gcsLogger);
     }
   }
 
