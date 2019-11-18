@@ -87,7 +87,7 @@ class TaskResult {
 ///
 /// [taskName] is the name of the task. The corresponding task executable is
 /// expected to be found under `bin/tasks`.
-Future<TaskResult> runTask(Agent agent, CocoonTask task) async {
+Future<TaskResult> runTask(Agent agent, CocoonTask task, Logger gcsLogger) async {
   String devicelabPath = '${config.flutterDirectory.path}/dev/devicelab';
   String taskExecutable = 'bin/tasks/${task.name}.dart';
 
@@ -118,24 +118,24 @@ Future<TaskResult> runTask(Agent agent, CocoonTask task) async {
 
   StringBuffer buffer = StringBuffer();
 
-  Future<Null> sendLog(String message, {bool flush: false}) async {
+  Future<Null> sendLog(String message, Logger gcsLogger, {bool flush: false}) async {
     buffer.write(toLogString(message));
     logger.info('[task runner] [${task.name}] $message');
     // Send a chunk at a time, or upon request.
     if (flush || buffer.length > _kLogChunkSize) {
       String chunk = buffer.toString();
       buffer = StringBuffer();
-      await agent.uploadLogChunk(task.key, chunk);
+      await agent.uploadLogChunk(task.key, chunk, gcsLogger);
     }
   }
 
   var stdoutSub =
       runner.stdout.transform(utf8.decoder).listen((String message) async {
-    await sendLog(message);
+    await sendLog(message, gcsLogger);
   });
   var stderrSub =
       runner.stderr.transform(utf8.decoder).listen((String message) async {
-    await sendLog(message);
+    await sendLog(message, gcsLogger);
   });
 
   String waitingFor = 'connection';
@@ -167,7 +167,7 @@ Future<TaskResult> runTask(Agent agent, CocoonTask task) async {
   } finally {
     await stdoutSub.cancel();
     await stderrSub.cancel();
-    await sendLog('Task execution finished', flush: true);
+    await sendLog('Task execution finished', gcsLogger, flush: true);
     // Force-quit the task runner process.
     if (!runnerFinished) runner.kill(ProcessSignal.sigkill);
     // Force-quit dangling local processes (such as adb commands).
