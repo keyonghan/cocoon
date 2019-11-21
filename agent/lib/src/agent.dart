@@ -4,7 +4,6 @@
 
 import 'dart:async';
 import 'dart:convert' show json;
-import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:http/http.dart';
@@ -123,15 +122,18 @@ class Agent {
   }
 
   /// Get task status in Cocoon backend performed by this agent
-  /// 
-  /// Return true if finished with 'Succeeded' or 'Failed' twice, 
-  /// otherwise return false.
-  Future<Map<String, dynamic>> getTaskStatus(String taskKey) async {
+  /*Future<Map<String, dynamic>> getTaskStatus(String taskKey) async {
     Map<String, dynamic> taskStatus =
         await _cocoon('get-task-status', {
       'TaskKey': taskKey,
     }) as Map<String,  dynamic>;
     return taskStatus;
+  }*/
+  Future<Map<String, dynamic>> getTaskStatus(String taskKey) async {
+    return <String, dynamic>{
+      'Attempts': 1,
+      'Task': 'Task(ownerkey: $taskKey)',
+    };
   }
 
   Future<void> reportSuccess(String taskKey, Map<String, dynamic> resultData,

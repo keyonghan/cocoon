@@ -54,32 +54,23 @@ class GetTaskStatus extends ApiRequestHandler<GetTaskStatusResponse> {
     final Task task = await datastore.db.lookupValue<Task>(taskKey, orElse: () {
       throw BadRequestException('No such task: ${taskKey.id}');
     });
-    final int maxRetries = await config.maxTaskRetries;
-    final bool status = task.status == 'Succeeded' ||
-        (task.status == 'Failed' && task.attempts >= maxRetries);
 
-    return GetTaskStatusResponse(status, task, maxRetries);
+    return GetTaskStatusResponse(task);
   }
 }
 
 @immutable
 class GetTaskStatusResponse extends JsonBody {
-  const GetTaskStatusResponse(this.status, this.task, this.maxRetries)
-      : assert(status != null),
-        assert(task != null),
-        assert(maxRetries!=null);
+  const GetTaskStatusResponse(this.task)
+      : assert(task != null);
 
-  final bool status;
   final Task task;
-  final int maxRetries;
 
   @override
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
-      'Status': status.toString(),
       'Attempts': task.attempts,
       'Task': task.toString(),
-      'MaxRetries': maxRetries,
     };
   }
 }

@@ -637,15 +637,32 @@ Future<String> getLogFile(String taskKey, Agent agent) async {
   int attempts = taskStatus['Attempts'] as int;
 
   if (Platform.isLinux || Platform.isMacOS) {
-    return '/tmp/${taskKey}_${attempts}.log';
+    return '/tmp/${taskKey}_${attempts}.txt';
   } else {
-    return '/Users/flutter/AppData/Local/Temp/${taskKey}_${attempts}.log';
+    return '/Users/flutter/AppData/Local/Temp/${taskKey}_${attempts}.txt';
   }
 }
 
-Future<Null> saveTaskInfo(String taskKey, Logger gcsLogger, Agent agent) async {
+Future<Null> saveTaskInfo(Agent agent, String taskKey, Logger gcsLogger) async {
   Map<String, dynamic> taskStatus = await agent.getTaskStatus(taskKey);
   String taskString = taskStatus['Task'] as String;
     
-  gcsLogger.info('\n------------ TASK ------------\n${taskString}\n\n------------ LOG ------------');
+  gcsLogger.info('\n------------ TASK ------------\n${taskString}');
+}
+
+Future<Null> cpLogToGcs(String logFile) async {
+  if (Platform.isLinux || Platform.isMacOS) {
+    await eval('gsutil.py', ['cp', logFile, 'gs://flutter-dashboard-task-log'],
+        canFail: true);
+  } else {
+    await eval(
+        'python',
+        [
+          '/Users/flutter/gsutil/gsutil.py',
+          'cp',
+          logFile,
+          'gs://flutter-dashboard-task-log'
+        ],
+        canFail: true);
+  }
 }
