@@ -52,6 +52,10 @@ class RunCommand extends Command {
 
     CocoonTask task = CocoonTask(
         name: taskName, revision: revision, timeoutInMinutes: 30);
+    String logFile = await getLogFile(task != null ? task.key ?? '' : '', agent);
+    File file = new File(logFile);
+    IOSink sink = file.openWrite();
+    Logger gcsLogger = PrintLogger(out: sink, level: LogLevel.info);
     TaskResult result;
     try {
       if (task.revision != null) {
@@ -62,10 +66,14 @@ class RunCommand extends Command {
         logger.info(
             'NOTE: No --revision specified. Running on current checkout.');
       }
-      result = await runTask(agent, task);
+      result = await runTask(agent, task, gcsLogger: gcsLogger);
     } catch (error, stackTrace) {
       logger.error('ERROR: $error\n$stackTrace');
     } finally {
+      await saveTaskInfo(agent, task.key, gcsLogger);
+      await cpLogToGcs(logFile);
+      await sink.close();
+      rm(file);
       await forceQuitRunningProcesses();
     }
     section('Task result');

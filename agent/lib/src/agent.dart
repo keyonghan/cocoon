@@ -101,6 +101,7 @@ class Agent {
     /// Save log locally and then upload to GCS
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     gcsLogger.info(chunk);
 =======
     Map<String, dynamic> taskStatus = await getTaskStatus(taskKey);
@@ -126,6 +127,9 @@ class Agent {
 =======
     gcsLogger.info(chunk);
 >>>>>>> add sub functions & logger
+=======
+    gcsLogger.info(chunk);
+>>>>>>> 735589c269d467c7c10fc3da00c60146b48e180c
   }
 
   /// Reserves a task in Cocoon backend to be performed by this agent.
@@ -149,15 +153,28 @@ class Agent {
   }
 
   /// Get task status in Cocoon backend performed by this agent
+<<<<<<< HEAD
   /// 
   /// Return true if finished with 'Succeeded' or 'Failed' twice, 
   /// otherwise return false.
   Future<Map<String, dynamic>> getTaskStatus(String taskKey) async {
+=======
+  /*Future<Map<String, dynamic>> getTaskStatus(String taskKey) async {
+>>>>>>> 735589c269d467c7c10fc3da00c60146b48e180c
     Map<String, dynamic> taskStatus =
         await _cocoon('get-task-status', {
       'TaskKey': taskKey,
     }) as Map<String,  dynamic>;
     return taskStatus;
+<<<<<<< HEAD
+=======
+  }*/
+  Future<Map<String, dynamic>> getTaskStatus(String taskKey) async {
+    return <String, dynamic>{
+      'Attempts': 1,
+      'Task': 'Task(ownerkey: $taskKey)',
+    };
+>>>>>>> 735589c269d467c7c10fc3da00c60146b48e180c
   }
 
   Future<void> reportSuccess(String taskKey, Map<String, dynamic> resultData,

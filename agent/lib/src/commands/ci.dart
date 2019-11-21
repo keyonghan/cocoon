@@ -92,11 +92,18 @@ class ContinuousIntegrationCommand extends Command {
 
           // [logFile] saves log locally and then will be
           // uploaded to GCS
+<<<<<<< HEAD
           String logFile = await getLogFile(task.key, agent);
           File file = new File(logFile);
           IOSink sink = file.openWrite();
           Logger gcsLogger = PrintLogger(out: sink, level: LogLevel.info);
 
+=======
+          String logFile = await getLogFile(task != null ? task.key ?? '' : '', agent);
+          File file = new File(logFile);
+          IOSink sink = file.openWrite();
+          Logger gcsLogger = PrintLogger(out: sink, level: LogLevel.info);
+>>>>>>> 735589c269d467c7c10fc3da00c60146b48e180c
           // Errors that happen inside this try/catch will be uploaded to the
           // server because we have succeeded at reserving a task.
           try {
@@ -117,16 +124,29 @@ class ContinuousIntegrationCommand extends Command {
                 await killAllRunningProcessesOnWindows('dart');
               }
 
+              // Save task info to [logFile] in the beginning of a task execution
+              await saveTaskInfo(agent, task.key, gcsLogger);
+              gcsLogger.info('\n\n------------ LOG ------------');
               // Sync flutter outside of the task so it does not contribute to
               // the task timeout.
               await getFlutterAt(task.revision).timeout(_kInstallationTimeout);
               await _cleanBuildDirectories(agent, task, gcsLogger);
               // Ensure the phone's screen is on before running a task.
               await _screensOn();
+<<<<<<< HEAD
               // Save task info to [logFile] in the beginning of a task execution
               await saveTaskInfo(task.key, gcsLogger, agent);
 
               await _runTask(task, gcsLogger);
+=======
+              await _runTask(task, gcsLogger);
+
+              // Save task info to [logFile] at the end of a task execution
+              await saveTaskInfo(agent, task.key, gcsLogger);
+              await cpLogToGcs(logFile);
+              await sink.close();
+              rm(file);
+>>>>>>> 735589c269d467c7c10fc3da00c60146b48e180c
             } else {
               logger.info('No tasks available for this agent.');
             }
@@ -134,6 +154,7 @@ class ContinuousIntegrationCommand extends Command {
             String errorMessage = 'ERROR: $error\n$stackTrace';
             logger.error(errorMessage);
             await agent.reportFailure(task.key, errorMessage, gcsLogger);
+<<<<<<< HEAD
           } finally {
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -179,6 +200,9 @@ class ContinuousIntegrationCommand extends Command {
 =======
 >>>>>>> add sub functions & logger
           }
+=======
+          } 
+>>>>>>> 735589c269d467c7c10fc3da00c60146b48e180c
         } catch (error, stackTrace) {
           // Unable to report failure to the backend.
           stderr.writeln('ERROR: $error\n$stackTrace');
@@ -237,7 +261,11 @@ class ContinuousIntegrationCommand extends Command {
   }
 
   Future<Null> _runTask(CocoonTask task, Logger gcsLogger) async {
+<<<<<<< HEAD
     TaskResult result = await runTask(agent, task, gcsLogger);
+=======
+    TaskResult result = await runTask(agent, task, gcsLogger: gcsLogger);
+>>>>>>> 735589c269d467c7c10fc3da00c60146b48e180c
     if (result.succeeded) {
       await agent.reportSuccess(
           task.key, result.data, result.benchmarkScoreKeys);
