@@ -36,23 +36,8 @@ void main() {
       final Task task = Task(key: commit.key.append(Task, id: 4795548400091136), commitKey: commit.key, status: 'Succeeded', attempts: 1);
       config.db.values[task.key] = task;
       final GetTaskStatusResponse response = await tester.post(handler);
-      expect(response.status, true);
-    });
-
-    test('return false for a Failed task with 1 attempt', () async {
-      final Commit commit = Commit(key: config.db.emptyKey.append(Commit, id: 'flutter/flutter/159a47da648a37f0fcd9e5e5c0f6121b2e075baa'));
-      final Task task = Task(key: commit.key.append(Task, id: 4795548400091136), commitKey: commit.key, status: 'Failed', attempts: 1);
-      config.db.values[task.key] = task;
-      final GetTaskStatusResponse response = await tester.post(handler);
-      expect(response.status, false);
-    });
-
-    test('return true for a Failed task with 2 attempt', () async {
-      final Commit commit = Commit(key: config.db.emptyKey.append(Commit, id: 'flutter/flutter/159a47da648a37f0fcd9e5e5c0f6121b2e075baa'));
-      final Task task = Task(key: commit.key.append(Task, id: 4795548400091136), commitKey: commit.key, status: 'Failed', attempts: 2);
-      config.db.values[task.key] = task;
-      final GetTaskStatusResponse response = await tester.post(handler);
-      expect(response.status, true);
+      expect(response.task.attempts, 1);
+      expect(response.task.toString(), 'Task(id: 4795548400091136, parentKey: flutter/flutter/159a47da648a37f0fcd9e5e5c0f6121b2e075baa, key: 4795548400091136, commitKey: flutter/flutter/159a47da648a37f0fcd9e5e5c0f6121b2e075baa, createTimestamp: 0, startTimestamp: 0, endTimestamp: 0, name: null, attempts: 1, isFlaky: false, timeoutInMinutes: null, reason: , requiredCapabilities: null, reservedForAgentId: , stageName: null, status: Succeeded)');
     });
   });
 }
