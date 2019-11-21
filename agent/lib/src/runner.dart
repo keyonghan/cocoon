@@ -87,11 +87,7 @@ class TaskResult {
 ///
 /// [taskName] is the name of the task. The corresponding task executable is
 /// expected to be found under `bin/tasks`.
-<<<<<<< HEAD
-Future<TaskResult> runTask(Agent agent, CocoonTask task, Logger gcsLogger) async {
-=======
 Future<TaskResult> runTask(Agent agent, CocoonTask task, {Logger gcsLogger}) async {
->>>>>>> 735589c269d467c7c10fc3da00c60146b48e180c
   String devicelabPath = '${config.flutterDirectory.path}/dev/devicelab';
   String taskExecutable = 'bin/tasks/${task.name}.dart';
 

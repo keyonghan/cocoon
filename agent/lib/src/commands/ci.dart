@@ -92,18 +92,10 @@ class ContinuousIntegrationCommand extends Command {
 
           // [logFile] saves log locally and then will be
           // uploaded to GCS
-<<<<<<< HEAD
-          String logFile = await getLogFile(task.key, agent);
-          File file = new File(logFile);
-          IOSink sink = file.openWrite();
-          Logger gcsLogger = PrintLogger(out: sink, level: LogLevel.info);
-
-=======
           String logFile = await getLogFile(task != null ? task.key ?? '' : '', agent);
           File file = new File(logFile);
           IOSink sink = file.openWrite();
           Logger gcsLogger = PrintLogger(out: sink, level: LogLevel.info);
->>>>>>> 735589c269d467c7c10fc3da00c60146b48e180c
           // Errors that happen inside this try/catch will be uploaded to the
           // server because we have succeeded at reserving a task.
           try {
@@ -133,12 +125,6 @@ class ContinuousIntegrationCommand extends Command {
               await _cleanBuildDirectories(agent, task, gcsLogger);
               // Ensure the phone's screen is on before running a task.
               await _screensOn();
-<<<<<<< HEAD
-              // Save task info to [logFile] in the beginning of a task execution
-              await saveTaskInfo(task.key, gcsLogger, agent);
-
-              await _runTask(task, gcsLogger);
-=======
               await _runTask(task, gcsLogger);
 
               // Save task info to [logFile] at the end of a task execution
@@ -146,7 +132,6 @@ class ContinuousIntegrationCommand extends Command {
               await cpLogToGcs(logFile);
               await sink.close();
               rm(file);
->>>>>>> 735589c269d467c7c10fc3da00c60146b48e180c
             } else {
               logger.info('No tasks available for this agent.');
             }
@@ -154,55 +139,7 @@ class ContinuousIntegrationCommand extends Command {
             String errorMessage = 'ERROR: $error\n$stackTrace';
             logger.error(errorMessage);
             await agent.reportFailure(task.key, errorMessage, gcsLogger);
-<<<<<<< HEAD
-          } finally {
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> add sub functions & logger
-            // Save task info to [logFile] at the end of a task execution
-            await saveTaskInfo(task.key, gcsLogger, agent);
-            await eval(
-                'gsutil.py',
-                [
-                  'cp',
-                  logFile,
-                  'gs://flutter-dashboard-task-log'
-                ],
-                canFail: true);
-            await sink.close();
-            rm(file);
-<<<<<<< HEAD
-=======
-            Map<String, dynamic> taskStatus = await agent.getTaskStatus(task.key);
-            String status = taskStatus['Status'] as String;
-            int attempts = taskStatus['Attempts'] as int;
-            int maxRetries = taskStatus['MaxRetries'] as int;
-
-            if (Platform.isLinux && status=='true') {
-              String logFile;
-              if (attempts > maxRetries) {
-                logFile = '/tmp/${task.key}_${attempts}.log';
-              } else {
-                logFile = '/tmp/${task.key}.log';
-              }
-              await eval(
-                  'gsutil.py',
-                  [
-                    'cp',
-                    logFile,
-                    'gs://flutter-dashboard-task-log'
-                  ],
-                  canFail: true);
-              await eval('rm', [logFile], canFail: true);
-            }
->>>>>>> update agent side
-=======
->>>>>>> add sub functions & logger
-          }
-=======
           } 
->>>>>>> 735589c269d467c7c10fc3da00c60146b48e180c
         } catch (error, stackTrace) {
           // Unable to report failure to the backend.
           stderr.writeln('ERROR: $error\n$stackTrace');
@@ -261,11 +198,7 @@ class ContinuousIntegrationCommand extends Command {
   }
 
   Future<Null> _runTask(CocoonTask task, Logger gcsLogger) async {
-<<<<<<< HEAD
-    TaskResult result = await runTask(agent, task, gcsLogger);
-=======
     TaskResult result = await runTask(agent, task, gcsLogger: gcsLogger);
->>>>>>> 735589c269d467c7c10fc3da00c60146b48e180c
     if (result.succeeded) {
       await agent.reportSuccess(
           task.key, result.data, result.benchmarkScoreKeys);

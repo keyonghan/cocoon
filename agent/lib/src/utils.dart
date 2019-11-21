@@ -637,20 +637,6 @@ Future<String> getLogFile(String taskKey, Agent agent) async {
   int attempts = taskStatus['Attempts'] as int;
 
   if (Platform.isLinux || Platform.isMacOS) {
-<<<<<<< HEAD
-    return '/tmp/${taskKey}_${attempts}.log';
-  } else {
-    return '/Users/flutter/AppData/Local/Temp/${taskKey}_${attempts}.log';
-  }
-}
-
-Future<Null> saveTaskInfo(String taskKey, Logger gcsLogger, Agent agent) async {
-  Map<String, dynamic> taskStatus = await agent.getTaskStatus(taskKey);
-  String taskString = taskStatus['Task'] as String;
-    
-  gcsLogger.info('\n------------ TASK ------------\n${taskString}\n\n------------ LOG ------------');
-}
-=======
     return '/tmp/${taskKey}_${attempts}.txt';
   } else {
     return '/Users/flutter/AppData/Local/Temp/${taskKey}_${attempts}.txt';
@@ -680,4 +666,3 @@ Future<Null> cpLogToGcs(String logFile) async {
         canFail: true);
   }
 }
->>>>>>> 735589c269d467c7c10fc3da00c60146b48e180c

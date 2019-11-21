@@ -4,7 +4,6 @@
 
 import 'dart:async';
 import 'dart:convert' show json;
-import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:http/http.dart';
@@ -99,37 +98,7 @@ class Agent {
           '${resp.body}';
     }
     /// Save log locally and then upload to GCS
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
     gcsLogger.info(chunk);
-=======
-    Map<String, dynamic> taskStatus = await getTaskStatus(taskKey);
-    int attempts = (taskStatus['Attempts'] as int);
-    int maxRetries = taskStatus['MaxRetries'] as int;
-    String taskString = taskStatus['Task'] as String;
-    String logFile;
-   
-    if (Platform.isLinux) {
-      if (attempts > maxRetries) {
-        logFile = '/tmp/${taskKey}_${attempts}.log';
-      } else {
-        logFile = '/tmp/${taskKey}.log';
-      }
-      if (attempts == 1 || attempts > maxRetries){
-        (await eval('echo', ['\n\n------------ TASK ------------', '>>', logFile], canFail: true)).trim();
-        (await eval('echo', [taskString, '>>', logFile], canFail: true)).trim();
-        (await eval('echo', ['\n\n------------ LOG ------------', '>>', logFile], canFail: true)).trim();
-      }
-      (await eval('echo', [chunk, '>>', logFile], canFail: true)).trim();
-    }
->>>>>>> update agent side
-=======
-    gcsLogger.info(chunk);
->>>>>>> add sub functions & logger
-=======
-    gcsLogger.info(chunk);
->>>>>>> 735589c269d467c7c10fc3da00c60146b48e180c
   }
 
   /// Reserves a task in Cocoon backend to be performed by this agent.
@@ -153,28 +122,18 @@ class Agent {
   }
 
   /// Get task status in Cocoon backend performed by this agent
-<<<<<<< HEAD
-  /// 
-  /// Return true if finished with 'Succeeded' or 'Failed' twice, 
-  /// otherwise return false.
-  Future<Map<String, dynamic>> getTaskStatus(String taskKey) async {
-=======
   /*Future<Map<String, dynamic>> getTaskStatus(String taskKey) async {
->>>>>>> 735589c269d467c7c10fc3da00c60146b48e180c
     Map<String, dynamic> taskStatus =
         await _cocoon('get-task-status', {
       'TaskKey': taskKey,
     }) as Map<String,  dynamic>;
     return taskStatus;
-<<<<<<< HEAD
-=======
   }*/
   Future<Map<String, dynamic>> getTaskStatus(String taskKey) async {
     return <String, dynamic>{
       'Attempts': 1,
       'Task': 'Task(ownerkey: $taskKey)',
     };
->>>>>>> 735589c269d467c7c10fc3da00c60146b48e180c
   }
 
   Future<void> reportSuccess(String taskKey, Map<String, dynamic> resultData,
