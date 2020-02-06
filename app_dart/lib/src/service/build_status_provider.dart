@@ -4,14 +4,18 @@
 
 import 'dart:async';
 
+import 'package:gcloud/db.dart';
 import 'package:meta/meta.dart';
 
+import '../model/appengine/agent.dart';
 import '../model/appengine/commit.dart';
 import '../model/appengine/github_build_status_update.dart';
 import '../model/appengine/stage.dart';
 import '../model/appengine/task.dart';
 
 import 'datastore.dart';
+
+const Duration maxHealthCheckAge = Duration(minutes: 10);
 
 /// Class that calculates the current build status.
 class BuildStatusProvider {
@@ -46,6 +50,12 @@ class BuildStatusProvider {
   /// Task B fails because its last known status was to be failing, even though
   /// there is currently a newer version that is in progress.
   Future<BuildStatus> calculateCumulativeStatus() async {
+
+    final bool isAgentAvailable = await _isAgentAvailable();
+    if (!isAgentAvailable) {
+      return BuildStatus.failed;
+    }
+
     final List<CommitStatus> statuses = await retrieveCommitStatus(
       limit: numberOfCommitsToReferenceForTreeStatus,
     ).toList();
@@ -128,6 +138,38 @@ class BuildStatusProvider {
   bool _isRerunning(Task task) {
     return task.attempts > 1 &&
         (task.status == Task.statusInProgress || task.status == Task.statusNew);
+  }
+
+  Future<bool> _isAgentAvailable() async {
+    const List<String> capabilities = <String>['linux', 'mac', 'windows'];
+    final DatastoreService datastore = datastoreProvider();
+    final Query<Agent> agentQuery = datastore.db.query<Agent>();
+    final List<Agent> agents =
+        await agentQuery.run().where(_isVisible).toList();
+    bool isAvailable = true;
+
+    for (String capability in capabilities) {
+      final List<Agent> subAgents = agents
+          .where((Agent agent) => agent.capabilities.contains(capability))
+          .toList();
+      if (subAgents.length > 1) {
+        isAvailable = subAgents.any((Agent agent) => _isAgentHealthy(agent));
+      }
+      if (!isAvailable) {
+        break;
+      }
+    }
+    return isAvailable;
+  }
+
+  bool _isVisible(Agent agent) => !agent.isHidden;
+
+  bool _isAgentHealthy(Agent agent) {
+    return agent.isHealthy &&
+        agent.healthCheckTimestamp != null &&
+        DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(
+                agent.healthCheckTimestamp)) <
+            maxHealthCheckAge;
   }
 }
 

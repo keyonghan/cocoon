@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:cocoon_service/src/model/appengine/agent.dart';
 import 'package:cocoon_service/src/model/appengine/commit.dart';
 import 'package:cocoon_service/src/model/appengine/task.dart';
 import 'package:cocoon_service/src/service/build_status_provider.dart';
@@ -76,6 +77,19 @@ List<Task> middleTaskRerunGreen = <Task>[
   Task(stageName: 'stage2', name: 'task3', status: Task.statusSucceeded),
 ];
 
+List<Agent> agents = <Agent>[
+  Agent(
+      agentId: 'linux1',
+      capabilities: <String>['linux'],
+      healthCheckTimestamp: DateTime.now().millisecondsSinceEpoch,
+      isHealthy: false),
+  Agent(
+      agentId: 'linux2',
+      capabilities: <String>['linux'],
+      healthCheckTimestamp: DateTime.now().millisecondsSinceEpoch,
+      isHealthy: false),
+];
+
 void main() {
   group('BuildStatusProvider', () {
     FakeDatastoreDB db;
@@ -97,6 +111,15 @@ void main() {
       test('returns success if top commit is all green', () async {
         db.addOnQuery<Commit>((Iterable<Commit> results) => oneCommit);
         db.addOnQuery<Task>((Iterable<Task> results) => allGreen);
+        final BuildStatus status =
+            await buildStatusProvider.calculateCumulativeStatus();
+        expect(status, BuildStatus.succeeded);
+      });
+
+      test('returns failure if there are no healthy agents', () async {
+        db.addOnQuery<Commit>((Iterable<Commit> results) => oneCommit);
+        db.addOnQuery<Task>((Iterable<Task> results) => allGreen);
+        db.addOnQuery<Agent>((Iterable<Agent> results) => agents);
         final BuildStatus status =
             await buildStatusProvider.calculateCumulativeStatus();
         expect(status, BuildStatus.succeeded);
