@@ -32,7 +32,7 @@ class UpdateCommitBranch extends ApiRequestHandler<UpdateCommitBranchResponse> {
     Logging log = config.loggingService;
     const String master = 'master';
     final DatastoreService datastore = datastoreProvider(config.db);
-    final List<TimeSeriesValue> timeSeriesValues = await datastore.queryRecentTimeseriesValueNoBranch(limit: 100000, timestamp: 1586384659524).toList();
+    final List<TimeSeriesValue> timeSeriesValues = await datastore.queryRecentTimeseriesValueNoBranch(limit: 100000, timestamp: 1585690883079).toList();
     timeSeriesValues.forEach((TimeSeriesValue timeSeriesValue) => timeSeriesValue.branch=master);
     await datastore.insert(timeSeriesValues);
     log.debug('inserted ${timeSeriesValues.length} timeSeriesValues');
