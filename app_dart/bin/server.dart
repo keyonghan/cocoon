@@ -48,6 +48,8 @@ Future<void> main() async {
           UpdateAgentHealthHistory(config, authProvider),
       '/api/update-benchmark-targets':
           UpdateBenchmarkTargets(config, authProvider),
+      '/api/update-commit-branch':
+          UpdateCommitBranch(config, authProvider),
       '/api/update-task-status': UpdateTaskStatus(config, authProvider),
       '/api/update-timeseries': UpdateTimeSeries(config, authProvider),
       '/api/vacuum-clean': VacuumClean(config, authProvider),

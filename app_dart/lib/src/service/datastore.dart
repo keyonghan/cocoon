@@ -100,6 +100,15 @@ class DatastoreService {
     return query.run();
   }
 
+  Stream<TimeSeriesValue> queryRecentTimeseriesValueNoBranch({int limit = 100, int timestamp}) {
+    timestamp ??= DateTime.now().millisecondsSinceEpoch;
+    final Query<TimeSeriesValue> query = db.query<TimeSeriesValue>()
+      ..limit(limit)
+      ..order('-createTimestamp')
+      ..filter('createTimestamp <', timestamp);
+    return query.run();
+  }
+
   /// queryRecentTimeSerialsValues fetches the latest benchmark results starting from
   /// [startFrom] and up to a given [limit].
   ///

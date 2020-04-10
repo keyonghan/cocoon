@@ -27,6 +27,7 @@ export 'src/request_handlers/reset_devicelab_task.dart';
 export 'src/request_handlers/update_agent_health.dart';
 export 'src/request_handlers/update_agent_health_history.dart';
 export 'src/request_handlers/update_benchmark_targets.dart';
+export 'src/request_handlers/update_commit_branch.dart';
 export 'src/request_handlers/update_task_status.dart';
 export 'src/request_handlers/update_timeseries.dart';
 export 'src/request_handlers/vacuum-clean.dart';
