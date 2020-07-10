@@ -27,7 +27,7 @@ Future<List<String>> loadBranchRegExps(
     HttpClientProvider branchHttpClientProvider,
     Logging log,
     GitHubBackoffCalculator gitHubBackoffCalculator) async {
-  const String path = '/flutter/cocoon/master/app_dart/dev/branch_regexps.txt';
+  const String path = '/flutter/cocoon/master/app_dart/dev/branches.txt';
   final Uri url = Uri.https('raw.githubusercontent.com', path);
 
   final HttpClient client = branchHttpClientProvider();
@@ -48,12 +48,11 @@ Future<List<String>> loadBranchRegExps(
           branches.removeWhere((String branch) => branch.isEmpty);
           return branches;
         } else {
-          log.warning(
-              'Attempt to download branch_regexps.txt failed (HTTP $status)');
+          log.warning('Attempt to download branches.txt failed (HTTP $status)');
         }
       } catch (error, stackTrace) {
         log.error(
-            'Attempt to download branch_regexps.txt failed:\n$error\n$stackTrace');
+            'Attempt to download branches.txt failed:\n$error\n$stackTrace');
       }
       await Future<void>.delayed(gitHubBackoffCalculator(attempt));
     }
