@@ -37,7 +37,7 @@ class CheckPullRequest extends RequestHandler {
 
   static const int kPullMesssageBatchSize = 100;
 
-  Future<List<Response>> get() async {
+  Future<List<Response>> get(Request r) async {
     final List<Response> responses = <Response>[];
     final pub.PullResponse pullResponse = await pubsub.pull('auto-submit-queue-sub', kPullMesssageBatchSize);
     final List<pub.ReceivedMessage>? receivedMessages = pullResponse.receivedMessages;
