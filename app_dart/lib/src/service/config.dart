@@ -418,6 +418,11 @@ class Config {
     return BigqueryService(accessClientProvider);
   }
 
+  Future<FirestoreService> createFirestoreService() async {
+    final AccessClientProvider accessClientProvider = AccessClientProvider();
+    return FirestoreService(accessClientProvider);
+  }
+
   Future<TabledataResource> createTabledataResourceApi() async {
     return (await createBigQueryService()).defaultTabledata();
   }

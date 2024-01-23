@@ -9,7 +9,23 @@ class AccessClientProvider {
   /// Returns an OAuth 2.0 authenticated access client for the device lab service account.
   Future<Client> createAccessClient({
     List<String> scopes = const <String>['https://www.googleapis.com/auth/cloud-platform'],
+    Client? baseClient,
   }) async {
-    return clientViaApplicationDefaultCredentials(scopes: scopes);
+    return clientViaApplicationDefaultCredentials(scopes: scopes, baseClient: baseClient);
+  }
+}
+
+class FirestoreBaseClient extends BaseClient {
+  FirestoreBaseClient({
+    this.defaultHeaders = const <String, String>{
+      'x-goog-request-params': 'project_id=flutter-dashboard&database_id=cocoon-experiment',
+    },
+  });
+  final Map<String, String> defaultHeaders;
+  final Client client = Client();
+  @override
+  Future<StreamedResponse> send(BaseRequest request) {
+    request.headers.addAll(defaultHeaders);
+    return client.send(request);
   }
 }

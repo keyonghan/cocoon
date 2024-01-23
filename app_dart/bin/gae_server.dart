@@ -10,11 +10,13 @@ import 'package:cocoon_service/server.dart';
 import 'package:cocoon_service/src/service/commit_service.dart';
 import 'package:gcloud/db.dart';
 
+const String _kCocoonUseInMemoryCache = 'COCOON_USE_IN_MEMORY_CACHE';
+
 Future<void> main() async {
   await withAppEngineServices(() async {
     useLoggingPackageAdaptor();
-
-    final CacheService cache = CacheService(inMemory: false);
+    final bool inMemoryCache = Platform.environment[_kCocoonUseInMemoryCache] == 'true';
+    final CacheService cache = CacheService(inMemory: inMemoryCache);
     final Config config = Config(dbService, cache);
     final AuthenticationProvider authProvider = AuthenticationProvider(config: config);
     final AuthenticationProvider swarmingAuthProvider = SwarmingAuthenticationProvider(config: config);

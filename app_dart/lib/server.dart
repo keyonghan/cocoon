@@ -51,14 +51,14 @@ Server createServer({
     '/api/github-webhook-pullrequest': GithubWebhook(
       config: config,
       pubsub: const PubSub(),
-      secret: config.webhookKey,
+      secret: 'test',
       topic: 'github-webhooks',
     ),
     // TODO(chillers): Move to release service. https://github.com/flutter/flutter/issues/132082
     '/api/github/frob-webhook': GithubWebhook(
       config: config,
       pubsub: const PubSub(),
-      secret: config.frobWebhookKey,
+      secret: 'test',
       topic: 'frob-webhooks',
     ),
     '/api/github/webhook-subscription': GithubWebhookSubscription(

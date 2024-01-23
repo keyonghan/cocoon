@@ -134,7 +134,8 @@ class AuthenticationProvider {
 
   Future<AuthenticatedContext> authenticateToken(TokenInfo token, {required ClientContext clientContext}) async {
     // Authenticate as a signed-in Google account via OAuth id token.
-    final String clientId = await config.oauthClientId;
+    // final String clientId = await config.oauthClientId;
+    const String clientId = '308150028417-vlj9mqlm3gk1d03fb0efif1fu5nagdtt.apps.googleusercontent.com';
     if (token.audience != clientId && !token.email!.endsWith('@google.com')) {
       log.warning('Possible forged token: "${token.audience}" (expected "$clientId")');
       throw const Unauthenticated('Invalid ID token');

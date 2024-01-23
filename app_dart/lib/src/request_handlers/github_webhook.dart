@@ -31,7 +31,7 @@ class GithubWebhook extends RequestHandler<Body> {
   final String topic;
 
   /// Future that resolves to the GitHub apps webhook secret.
-  final Future<String> secret;
+  final String secret;
 
   @override
   Future<Body> post() async {
