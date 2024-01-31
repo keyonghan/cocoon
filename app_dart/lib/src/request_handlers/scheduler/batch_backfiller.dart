@@ -95,7 +95,7 @@ class BatchBackfiller extends RequestHandler {
             'startTimestamp': Value(integerValue: task.task.startTimestamp.toString()),
             'status': Value(stringValue: task.task.status),
             'testFlaky': Value(booleanValue: task.task.isTestFlaky),
-            'commmitSha': Value(stringValue: task.commit.sha),
+            'commitSha': Value(stringValue: task.commit.sha),
           },
         );
         writes.add(Write(update: taskDocument, currentDocument: Precondition(exists: false)));

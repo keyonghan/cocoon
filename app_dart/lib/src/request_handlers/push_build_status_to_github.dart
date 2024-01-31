@@ -81,15 +81,12 @@ class PushBuildStatusToGithub extends ApiRequestHandler<Body> {
 
     // run query
     final List<CollectionSelector> from = <CollectionSelector>[CollectionSelector(collectionId: 'tasks')];
-    final Filter filter = Filter(fieldFilter: FieldFilter(field: FieldReference(fieldPath: 'commitSha'), op: 'EQUAL', value: Value(stringValue: '0f7f08d5354856ea41930f2c178a96ca97518d5a')));
+    final Filter filter = Filter(fieldFilter: FieldFilter(field: FieldReference(fieldPath: 'commitSha'), op: 'EQUAL', value: Value(stringValue: '461f0bfb4b84efde9f5d360193ba14f55abcfce0')));
     final RunQueryRequest runQueryRequest = RunQueryRequest(structuredQuery: StructuredQuery(from: from, where: filter));
     final List<RunQueryResponseElement> runQueryResponseElements = await firestoreService.runQuery(runQueryRequest, parent);
     print(runQueryResponseElements.length);
     print(runQueryResponseElements[0].document);
     print(runQueryResponseElements[0].document!.name);
-    for (RunQueryResponseElement runQueryResponseElement in runQueryResponseElements) {
-      print(runQueryResponseElement.toString());
-    }
 
 
 
